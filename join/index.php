@@ -47,8 +47,17 @@
 
 // 入力チェック後エラーがなければCheck.phpに移動
     // $errorが存在してなかったら入力は正常と認識
-    if (!isset($error)){
+    if (!isset($error)) {
 
+// 画像の拡張子チェック
+      // jpg,png,gifはok
+      // stbst...文字列から範囲指定して一部分の文字を切り出す関数
+      // substr文字列、切り出す文字のスタートの数）マイナスの時は末尾からn番目
+      // 例1.pngの場合はpngが切り出される
+// 
+      $ext = substr($_FILES['picture_path']['name'],-3);
+
+      if (($ext =='png') || ($ext == 'gif') ||($ext == 'jpg')){
       // 画像のアップロード処理
       // ide1.png を指定した時　＄Picture_nameの中身は20171222142530ide1.png というような文字列が代入される
       // Yyear m month d day h hour s second
@@ -72,9 +81,11 @@
 // これ以下のコードを無駄にしないようにこのページの処理を終了する
       exit();
 
-    }
+    }else{
+      $error["image"] = 'type';
+       }
 
-
+}
 
 
 
@@ -174,8 +185,10 @@
             <div class="col-sm-8">
               <input type="file" name="picture_path" class="form-control">
             </div>
+            <?php if((isset($error["image"])) && ($error["image"] == 'type')) { ?>
+            <p class="error">＊画像ファイルを選択してください</p>
+            <?php }?>
           </div>
-
           <input type="submit" class="btn btn-default" value="確認画面へ">
         </form>
       </div>

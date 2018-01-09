@@ -1,4 +1,16 @@
 <?php
+// SESSION変数を使用する時はファイルの上の方にsession_start();を記述する必要がある
+session_start();
+
+// クッキーに情報が存在していたら　自動ログイン
+// ＄＿POSTに送信情報を保存
+if (isset($_COOKIE["email"]) && !enpty($_COOKIE["email"])) {
+  # code...
+  $_POST["email"] = $_COOKIE["email"];
+  $_POST["password"] = $_COOKIE["password"];
+  $_POST["save"] = "on";
+
+}
 
 // DBに接続
 require('dbconect.php');
@@ -27,6 +39,19 @@ if(isset($_POST) && !empty($_POST)){
           $error["login"] = "failed";
         } else{
           // 認証成功
+          // １　SESSION変数に会員のIDを保存
+          $_SESSION["id"] = $member["member_id"];
+          //２　ログインした時間をセッション変数の保存
+          $_SESSION["time"] = time(); 
+          // ３　自動ログインの処理
+          if($_POST["save"] == "on"){
+            // クッキーにログイン情報を記憶
+            // 保存したい名前　保存したい値　保存したい期間：秒数
+            setcookie('email',$_POST["email"],time()+60*60*24*14);
+            setcookie('password',$_POST["password"],time()+60*60*24*14);
+
+          }
+
           header("Location: index.php");
           exit();
         }
@@ -66,7 +91,7 @@ if(isset($_POST) && !empty($_POST)){
                   <span class="icon-bar"></span>
                   <span class="icon-bar"></span>
               </button>
-              <a class="navbar-brand" href="index.html"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
+              <a class="navbar-brand" href="index.php"><span class="strong-title"><i class="fa fa-twitter-square"></i> Seed SNS</span></a>
           </div>
           <!-- Collect the nav links, forms, and other content for toggling -->
           <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -99,6 +124,17 @@ if(isset($_POST) && !empty($_POST)){
               <input type="password" name="password" class="form-control" placeholder="">
             </div>
           </div>
+          <!-- 自動ログイン -->
+          <div class="form-group">
+            <label class="col-sm-4 control-label">自動ログイン</label>
+            <div class="col-sm-8">
+            <input type="checkbox" name="save" placeholder="">オンにする
+            </div>
+          </div>
+
+          <?php if((isset($error["login"])) && ($error["login"] == 'failed')) { ?>
+            <p class="error">＊EMAILかパスワードが間違っています</p>
+            <?php }?>
           <input type="submit" class="btn btn-default" value="ログイン">
         </form>
       </div>

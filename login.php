@@ -1,3 +1,43 @@
+<?php
+
+// DBに接続
+require('dbconect.php');
+
+// POST送信されていたら
+if(isset($_POST) && !empty($_POST)){
+// 認証処理
+  try {
+    // メンバーテーブルでテーブルの中からメールアドレスとパスワードが入力されたものと合致するデータを取得
+        $sql = "SELECT  * FROM`members` WHERE`email`=? AND `password`=?";
+
+        // spl文実行
+        // パスワードは入力されたものを暗号化した上で使用する
+        $data = array($_POST["email"],sha1($_POST["password"]));
+        $stmt = $dbh->prepare($sql);
+        $stmt->execute($data);
+
+        // 一行取得
+        $member = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // echo "<pre>";
+        // var_dump($member);
+        // echo "</pre>";
+        if ($member == false){
+          // 認証失敗
+          $error["login"] = "failed";
+        } else{
+          // 認証成功
+          header("Location: index.php");
+          exit();
+        }
+        } catch (Exception $e){
+
+          }
+}
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="ja">
   <head>
@@ -8,11 +48,11 @@
     <title>SeedSNS</title>
 
     <!-- Bootstrap -->
-    <link href="../assets/css/bootstrap.css" rel="stylesheet">
-    <link href="../assets/font-awesome/css/font-awesome.css" rel="stylesheet">
-    <link href="../assets/css/form.css" rel="stylesheet">
-    <link href="../assets/css/timeline.css" rel="stylesheet">
-    <link href="../assets/css/main.css" rel="stylesheet">
+    <link href="assets/css/bootstrap.css" rel="stylesheet">
+    <link href="assets/font-awesome/css/font-awesome.css" rel="stylesheet">
+    <link href="assets/css/form.css" rel="stylesheet">
+    <link href="assets/css/timeline.css" rel="stylesheet">
+    <link href="assets/css/main.css" rel="stylesheet">
 
   </head>
   <body>
@@ -46,8 +86,10 @@
           <!-- メールアドレス -->
           <div class="form-group">
             <label class="col-sm-4 control-label">メールアドレス</label>
+            
             <div class="col-sm-8">
               <input type="email" name="email" class="form-control" placeholder="例： seed@nex.com">
+          
             </div>
           </div>
           <!-- パスワード -->
@@ -64,8 +106,8 @@
   </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="../assets/js/jquery-3.1.1.js"></script>
-    <script src="../assets/js/jquery-migrate-1.4.1.js"></script>
-    <script src="../assets/js/bootstrap.js"></script>
+    <script src="assets/js/jquery-3.1.1.js"></script>
+    <script src="assets/js/jquery-migrate-1.4.1.js"></script>
+    <script src="assets/js/bootstrap.js"></script>
   </body>
 </html>

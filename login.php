@@ -4,7 +4,7 @@ session_start();
 
 // クッキーに情報が存在していたら　自動ログイン
 // ＄＿POSTに送信情報を保存
-if (isset($_COOKIE["email"]) && !enpty($_COOKIE["email"])) {
+if (isset($_COOKIE["email"]) && !empty($_COOKIE["email"])) {
   # code...
   $_POST["email"] = $_COOKIE["email"];
   $_POST["password"] = $_COOKIE["password"];

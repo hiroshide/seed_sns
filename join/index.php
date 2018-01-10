@@ -2,6 +2,8 @@
   session_start();//SESSIONを使うときは絶対必要
 
 
+// DBに接続
+  require ('../dbconect.php');
 // 書き直し処理(check.phpで書き直しというボタンが押された時)
   if (isset($_GET['action']) && $_GET['action'] == 'rewrite'){
 
@@ -49,51 +51,69 @@
     // $errorが存在してなかったら入力は正常と認識
     if (!isset($error)) {
 
+      // EMAILの重複チェック
+      // DBに同じEmailの登録があるか確認
+      try{
+// 検索条件にヒットした件数を取得するSQL文
+        // COUNT()_はSqlの関数　ヒットした数を取得
+        // as 別名　取得したデータに別な名前をつけて扱いやすくする
+
+        $sql = "SELECT COUNT(*) as`cnt` FROM`members` WHERE`email`=?";
+
+        // sql実行
+        $data = array($_POST["email"]);
+        $stmt = $dbh->prepare($sql);
+        $stmt->execute($data);
+// 件数取得
+        $count = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if($count['cnt'] > 0){
+          // 重複エラー
+          $error['email'] = "duplicated";
+        }
+      }catch(Eception $e){
+
+      }
+
+
+      if(!isset($error)){
 // 画像の拡張子チェック
       // jpg,png,gifはok
       // stbst...文字列から範囲指定して一部分の文字を切り出す関数
       // substr文字列、切り出す文字のスタートの数）マイナスの時は末尾からn番目
       // 例1.pngの場合はpngが切り出される
 // 
-      $ext = substr($_FILES['picture_path']['name'],-3);
+        $ext = substr($_FILES['picture_path']['name'],-3);
 
-      if (($ext =='png') || ($ext == 'gif') ||($ext == 'jpg')){
+        if (($ext =='png') || ($ext == 'gif') ||($ext == 'jpg')){
       // 画像のアップロード処理
       // ide1.png を指定した時　＄Picture_nameの中身は20171222142530ide1.png というような文字列が代入される
       // Yyear m month d day h hour s second
       // ファイル名の決定
-      $picture_name = date('Ymdhis') .$_FILES['picture_path']['name'];
+       $picture_name = date('Ymdhis') .$_FILES['picture_path']['name'];
 
 // アップロード
       // フォルダに書き込み権限がないと保存されない
       // move_uploaded_file(uoloadしtくぃファイル, サーバのどこにどういう名前でアップロードするか指定)
-      move_uploaded_file($_FILES['picture_path']['tmp_name'], '../picture_path/'.$picture_name);
+       move_uploaded_file($_FILES['picture_path']['tmp_name'], '../picture_path/'.$picture_name);
 
 // Session変数に保存された値を保存(どこの画面からでも使用できる)
       // 注意　必ずファイルの一番上にsession_start();と書く
       // POST送信された情報をJOINというきーを指定して保存
-      $_SESSION['join'] = $_POST;
-      $_SESSION['join']['picture_path'] = $picture_name;
+        $_SESSION['join'] = $_POST;
+       $_SESSION['join']['picture_path'] = $picture_name;
 
 
 // Check.phpに移動
-      header('Location: check.php');
+        header('Location: check.php');
 // これ以下のコードを無駄にしないようにこのページの処理を終了する
-      exit();
+        exit();
 
-    }else{
-      $error["image"] = 'type';
+       }else{
+        $error["image"] = 'type';
        }
-
-}
-
-
-
-
-
-
-
-
+    }
+  }
 }
 ?>
 
@@ -163,6 +183,9 @@
             </div>
             <?php if((isset($error["email"])) && ($error["email"] == 'blank')) { ?>
             <p class="error">＊Emailを入力してください</p>
+            <?php }?>
+            <?php if((isset($error["email"])) && ($error["email"] == 'duplicated')) { ?>
+            <p class="error">＊Emailが重複していますtyoufukusiteimasu</p>
             <?php }?>
           </div>
           <!-- パスワード -->

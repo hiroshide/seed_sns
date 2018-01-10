@@ -11,6 +11,41 @@ if(isset($_SESSION['id'])){
   header("Location: login.php");
   exit();
 }
+// POST送信されていたらつぶやきをインサートで保存
+
+  
+if(isset($_POST) && !empty($_POST)){
+// 変数に入力された値を代入して扱いやすいようにする
+    $tweet = $_POST['tweet'];
+    $member_id = $_SESSION['id'];
+    // $reply_tweet_id = $_SESSION['tweets']['reply_tweet_id'];
+
+  try {
+    //DBに会員情報を登録するSQL文を作成
+// now()
+      // mysqlが用意してくれてる関数　現在日時を取得できる
+      $sql = 'INSERT INTO `tweets`(`tweet`, `member_id`, `reply_tweet_id`,`created`, `modified`) VALUES (?,?,-1,now(),now())';
+
+      // $sql = 'INSERT INTO `survey` (`nickname`,`email`,`content`)  VALUES ("'.$nickname.'","'.$email.'","'.$content.'");';
+
+    // SQL文実行
+      // sha1() 暗号化を行う
+      $data = array($tweet,$member_id);
+      $stmt = $dbh->prepare($sql);
+      $stmt->execute($data);
+    // ＄＿SESSIONの情報を削除
+
+// unset();指定した変数を削除
+      // unset($_SESSION["tweets"]);
+    // Thanks.phpへ移動
+      header('Location: index.php');
+      exit();
+
+  } catch (Exception $e) {
+      // tryで囲まれたところでエラーが発生したときにやりたい処理
+      // echo 'SQL実行エラー：'.$e->getMessaga();
+    }
+}
 
 
 // 表示用のデータ取得
@@ -26,6 +61,8 @@ $login_member = $stmt->fetch(PDO::FETCH_ASSOC);
 }catch(Exection $e){
 
 }
+
+
 ?>
 <!DOCTYPE html>
 <html lang="ja">

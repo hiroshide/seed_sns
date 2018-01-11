@@ -17,7 +17,7 @@ require('dbconect.php');
     $tweeet = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
-   $sql = "SELECT `tweets`.*,`members`.`nick_name`,`picture_path` FROM`tweets` INNER JOIN `members` ON `tweets`.`member_id`=`members`.`member_id`";
+   $sql = "SELECT `tweets`.*,`members`.`nick_name`,`picture_path` FROM`tweets` INNER JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE `tweet_id`=".$_GET["tweet_id"];
 
     $stmt = $dbh->prepare($sql);
     $stmt->execute();
@@ -73,7 +73,7 @@ require('dbconect.php');
     <div class="row">
       <div class="col-md-4 col-md-offset-4 content-margin-top">
         <div class="msg">
-          <img src="picture_path/<?php echo $tweet["picture_path"];?>" width="100" height="100">
+          <img src="picture_path/<?php echo $tweet["picture_path"]; ?>" width="100" height="100">
           <p>投稿者 : <span class="name"><?php echo $tweet["nick_name"]; ?></span></p>
           <p>
             つぶやき : <br>

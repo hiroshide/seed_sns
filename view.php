@@ -84,7 +84,7 @@ require('dbconect.php');
             [<a href="#" style="color: #F33;">削除</a>]
           </p>
         </div>
-        <a href="index.html">&laquo;&nbsp;一覧へ戻る</a>
+        <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>
       </div>
     </div>
   </div>

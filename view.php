@@ -80,7 +80,12 @@ require('dbconect.php');
             <?php echo $tweeet["tweet"]; ?>
           </p>
           <p class="day">
-            <?php echo $tweeet["modified"]; ?>
+              <?php 
+                $modify_date = $tweeet["modified"];
+                // strtotime 文字型のデータを日時型に変換できる
+                $modify_date = date("Y-m-d H:i",strtotime($modify_date));
+                echo $modify_date;
+              ?>
             [<a href="#" style="color: #F33;">削除</a>]
           </p>
         </div>

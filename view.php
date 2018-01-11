@@ -7,14 +7,14 @@ require('dbconect.php');
 // ヒント２　送信されているtweet_idを使用してSQLSQL文でDBからデータを一件取得
   try{
 
-    $sql = "SELECT * FROM `tweets` WHERE `tweet_id`=?";
+    // $sql = "SELECT * FROM `tweets` WHERE `tweet_id`=?";
 
-    $data = array($_GET["tweet_id"]);
-    $stmt = $dbh->prepare($sql);
-    $stmt->execute($data);
+    // $data = array($_GET["tweet_id"]);
+    // $stmt = $dbh->prepare($sql);
+    // $stmt->execute($data);
 
 // ヒント３　取得できたデータを一覧の一行ぶんの表示を参考に表示してみる
-    $tweeet = $stmt->fetch(PDO::FETCH_ASSOC);
+    // $tweeet = $stmt->fetch(PDO::FETCH_ASSOC);
 
 
    $sql = "SELECT `tweets`.*,`members`.`nick_name`,`picture_path` FROM`tweets` INNER JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE `tweet_id`=".$_GET["tweet_id"];
@@ -77,11 +77,11 @@ require('dbconect.php');
           <p>投稿者 : <span class="name"><?php echo $tweet["nick_name"]; ?></span></p>
           <p>
             つぶやき : <br>
-            <?php echo $tweeet["tweet"]; ?>
+            <?php echo $tweet["tweet"]; ?>
           </p>
           <p class="day">
               <?php 
-                $modify_date = $tweeet["modified"];
+                $modify_date = $tweet["modified"];
                 // strtotime 文字型のデータを日時型に変換できる
                 $modify_date = date("Y-m-d H:i",strtotime($modify_date));
                 echo $modify_date;

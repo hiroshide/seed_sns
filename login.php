@@ -20,7 +20,7 @@ if(isset($_POST) && !empty($_POST)){
 // 認証処理
   try {
     // メンバーテーブルでテーブルの中からメールアドレスとパスワードが入力されたものと合致するデータを取得
-        $sql = "SELECT  * FROM`members` WHERE`email`=? AND `password`=?";
+        $sql = "SELECT  * FROM`members` WHERE`email`=? AND `password`=?;";
 
         // spl文実行
         // パスワードは入力されたものを暗号化した上で使用する

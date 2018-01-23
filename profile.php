@@ -1,27 +1,50 @@
-<?php
-// session_start();
+<?php 
+  session_start();
 
-require('dbconect.php');
-// 個別ページの表示を完成させる
-// ＄＿GET["tweet_id"]の中に表示したいつぶやきのtweet_idが格納されている
-// ヒント２送信されているtweet_idを使用してSQLSQL文でDBからデータを一件取得
+  require('dbconect.php');
 
-require('function.php');
-  login_check();
+  // GET送信されたmember_idを使ってプロフィール情報をmembersテーブルから取得
 
-  try{
+  $sql = "SELECT * FROM`members`WHERE `member_id`=".$_GET["member_id"];
 
-    // $sql 実行
-   $sql = "SELECT `tweets`.*,`members`.`nick_name`,`picture_path` FROM`tweets` INNER JOIN `members` ON `tweets`.`member_id`=`members`.`member_id` WHERE `tweet_id`=".$_GET["tweet_id"];
+  $stmt = $dbh->prepare($sql);
+  $stmt->execute();
+      // 個別ページに表示するデータを取得
+  $profile_member = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    $stmt = $dbh->prepare($sql);
-    $stmt->execute();
-    // 個別ページに表示するデータを取得
-    $tweet = $stmt->fetch(PDO::FETCH_ASSOC);
+  // フォロー処理
+  // Prolile.php?follow_id=7 GET送信というリンクが押された＝フォローボタンが押された
+  if (isset($_GET["follow_id"])){
+    // follow情報を記憶するsql文を作成
+    $sql = "INSERT INTO `follows` (`member_id`, `follower_id`) VALUES (?,?);";
 
-  }catch(Exception $e){
-
+    $fl_data = array($_SESSION["id"],$_GET["follow_id"]);
+    $fl_stmt = $dbh->prepare($sql);
+    $fl_stmt->execute($fl_data);
   }
+
+
+
+  $nsql = "SELECT * FROM `tweets` WHERE `member_id`=? AND `delete_flag`=0 ORDER BY `tweets`.`modified` DESC";
+
+  $data = array($_GET["member_id"]);
+  $nstmt = $dbh->prepare($nsql);
+  $nstmt->execute($data);
+
+// 一覧表示用の配列を用意
+  $tweet_list = array();
+// 複数行データを取得するためループ
+  while(1){
+    $tweeet = $nstmt->fetch(PDO::FETCH_ASSOC);
+     
+    if($tweeet == false){
+      break;
+    }else{
+      // データ取得できている
+      $tweet_list[] = $tweeet;
+    }
+  }
+
 ?>
 
 <!DOCTYPE html>
@@ -67,25 +90,42 @@ require('function.php');
 
   <div class="container">
     <div class="row">
-      <div class="col-md-4 col-md-offset-4 content-margin-top">
+      <div class="col-md-3 content-margin-top">
+        <img src="picture_path/<?php echo $profile_member["picture_path"];?>" width="250" height="250">
+        <h3><?php echo $profile_member["nick_name"]; ?></h3>
+        <?php if($_SESSION["id"] != $_GET["member_id"]){ ?>
+        <a href="profile.php?member_id=<?php echo $profile_member["member_id"]; ?>&follow_id=<?php echo $profile_member["member_id"]; ?>">
+          <button class="btn btn-block btn-default">フォロー</button>
+        </a>
+        <?php }?>
+
+        <br>
+        <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>        
+      </div>
+      <div class="col-md-9 content-margin-top">
+
+      <?php foreach ($tweet_list as $tweet) { ?>
         <div class="msg">
-          <img src="picture_path/<?php echo $tweet["picture_path"]; ?>" width="100" height="100">
-          <p>投稿者 : <span class="name"><?php echo $tweet["nick_name"]; ?></span></p>
+          <img src="picture_path/<?php echo $profile_member["picture_path"];?>" width="100" height="100">
+          <p>投稿者 : <span class="name"> <?php echo $profile_member["nick_name"];?> </span></p>
           <p>
             つぶやき : <br>
-            <?php echo $tweet["tweet"]; ?>
+            <?php echo $tweet["tweet"];?>
           </p>
           <p class="day">
-              <?php 
+            <?php 
                 $modify_date = $tweet["modified"];
                 // strtotime 文字型のデータを日時型に変換できる
                 $modify_date = date("Y-m-d H:i",strtotime($modify_date));
                 echo $modify_date;
               ?>
+            <?php if($_SESSION["id"] == $profile_member["member_id"]){ ?>
             [<a href="#" style="color: #F33;">削除</a>]
+            <?php }?>
           </p>
         </div>
-        <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>
+
+      <?php } ?>
       </div>
     </div>
   </div>
@@ -96,3 +136,4 @@ require('function.php');
     <script src="assets/js/bootstrap.js"></script>
   </body>
 </html>
+1 件のコメント

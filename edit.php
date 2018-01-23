@@ -1,13 +1,35 @@
 <?php
-// session_start();
-
-require('dbconect.php');
-// 個別ページの表示を完成させる
-// ＄＿GET["tweet_id"]の中に表示したいつぶやきのtweet_idが格納されている
-// ヒント２送信されているtweet_idを使用してSQLSQL文でDBからデータを一件取得
 
 require('function.php');
-  login_check();
+login_check();
+
+require('dbconect.php');
+
+if(isset($_POST) && !empty($_POST["tweet"])){
+  if($_POST["tweet"] == ""){
+    $error["tweet"] = "blank";
+  }
+
+  if(!isset($error)){
+
+
+  
+      $sql = "UPDATE `tweets`SET`tweet`=? WHERE`tweets`.`tweet_id` =?;";
+
+      // $sql = 'INSERT INTO `survey` (`nickname`,`email`,`content`)  VALUES ("'.$nickname.'","'.$email.'","'.$content.'");';
+
+    // SQL文実行
+      // sha1() 暗号化を行う
+      $data = array($_POST["tweet"],$_GET["tweet_id"]);
+      $stmt = $dbh->prepare($sql);
+      $stmt->execute($data);
+
+
+    // 自分のページに移動　データの再送信防止
+      header('Location: index.php');
+
+    }
+}
 
   try{
 
@@ -22,6 +44,8 @@ require('function.php');
   }catch(Exception $e){
 
   }
+
+
 ?>
 
 <!DOCTYPE html>
@@ -67,23 +91,21 @@ require('function.php');
 
   <div class="container">
     <div class="row">
-      <div class="col-md-4 col-md-offset-4 content-margin-top">
+      <div class="col-md-6 col-md-offset-3 content-margin-top">
+        <h4>つぶやきを編集</h4>
         <div class="msg">
-          <img src="picture_path/<?php echo $tweet["picture_path"]; ?>" width="100" height="100">
-          <p>投稿者 : <span class="name"><?php echo $tweet["nick_name"]; ?></span></p>
-          <p>
-            つぶやき : <br>
-            <?php echo $tweet["tweet"]; ?>
-          </p>
-          <p class="day">
-              <?php 
-                $modify_date = $tweet["modified"];
-                // strtotime 文字型のデータを日時型に変換できる
-                $modify_date = date("Y-m-d H:i",strtotime($modify_date));
-                echo $modify_date;
-              ?>
-            [<a href="#" style="color: #F33;">削除</a>]
-          </p>
+          <form method="post" action="" class="form-horizontal" role="form">
+            <!-- つぶやき -->
+            <div class="form-group">
+              <label class="col-sm-4 control-label">つぶやき</label>
+              <div class="col-sm-8">
+                <textarea name="tweet" cols="50" rows="5" class="form-control" placeholder=""><?php echo $tweet["tweet"]; ?></textarea>
+              </div>
+            </div>
+            <ul class="paging">
+              <input type="submit" class="btn btn-info" value="変更保存">
+            </ul>
+          </form>
         </div>
         <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>
       </div>

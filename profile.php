@@ -5,12 +5,19 @@
 
   // GET送信されたmember_idを使ってプロフィール情報をmembersテーブルから取得
 
-  $sql = "SELECT * FROM`members`WHERE `member_id`=".$_GET["member_id"];
+    $sql = "SELECT * FROM`members`WHERE `member_id`=".$_GET["member_id"];
 
-  $stmt = $dbh->prepare($sql);
-  $stmt->execute();
+    $stmt = $dbh->prepare($sql);
+    $stmt->execute();
       // 個別ページに表示するデータを取得
-  $profile_member = $stmt->fetch(PDO::FETCH_ASSOC);
+    $profile_member = $stmt->fetch(PDO::FETCH_ASSOC);
+
+
+    $fl_flag_sql = "SELECT COUNT(*) as `cnt` FROM `follows` WHERE `member_id` =".$_SESSION["id"]." AND `follower_id`=".$_GET["member_id"];
+    $fl_f_stmt = $dbh->prepare($fl_flag_sql);
+    $fl_f_stmt->execute();
+    $fl_flag = $fl_f_stmt->fetch(PDO::FETCH_ASSOC);
+
 
   // フォロー処理
   // Prolile.php?follow_id=7 GET送信というリンクが押された＝フォローボタンが押された
@@ -21,8 +28,19 @@
     $fl_data = array($_SESSION["id"],$_GET["follow_id"]);
     $fl_stmt = $dbh->prepare($sql);
     $fl_stmt->execute($fl_data);
+    header("Location: profile.php?member_id=".$_GET["member_id"]);
   }
+  if(isset($_GET["unfollow_id"])){
+  // 登録されているfフォロー情報をテーブルから削除
 
+    $un_sql = "DELETE FROM `follows` WHERE `member_id`=".$_SESSION["id"]." AND `follower_id`=".$_GET["unfollow_id"];
+
+    // // // sql実行
+    $un_stmt = $dbh->prepare($un_sql);
+    $un_stmt->execute($data);
+
+    header("Location: profile.php?member_id=".$_GET["member_id"]);
+  }
 
 
   $nsql = "SELECT * FROM `tweets` WHERE `member_id`=? AND `delete_flag`=0 ORDER BY `tweets`.`modified` DESC";
@@ -94,10 +112,15 @@
         <img src="picture_path/<?php echo $profile_member["picture_path"];?>" width="250" height="250">
         <h3><?php echo $profile_member["nick_name"]; ?></h3>
         <?php if($_SESSION["id"] != $_GET["member_id"]){ ?>
+        <?php if($fl_flag["cnt"]==0){?>
         <a href="profile.php?member_id=<?php echo $profile_member["member_id"]; ?>&follow_id=<?php echo $profile_member["member_id"]; ?>">
           <button class="btn btn-block btn-default">フォロー</button>
         </a>
-        <?php }?>
+        <?php }else{?>
+        <a href="profile.php?member_id=<?php echo $profile_member["member_id"]; ?>&unfollow_id=<?php echo $profile_member["member_id"]; ?>">
+          <button class="btn btn-block btn-default">フォロー解除</button>
+        </a>
+        <?php }}?>
 
         <br>
         <a href="index.php">&laquo;&nbsp;一覧へ戻る</a>        

@@ -57,7 +57,7 @@
 
   
   if(isset($_GET["unfollow_id"])){
-// 登録されているLike情報をテーブルから削除
+// 登録されているfフォロー情報をテーブルから削除
 
   $un_sql = "DELETE FROM `follows` WHERE `member_id`=".$_SESSION["id"]." AND `follower_id`=".$_GET["unfollow_id"];
 

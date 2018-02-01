@@ -2,6 +2,7 @@
 // session_start();
 
 require('function.php');
+require('tag_function.php');
 
 // ログインチェック
 login_check();
@@ -32,8 +33,20 @@ if(isset($_POST) && !empty($_POST["tweet"])){
       $stmt = $dbh->prepare($sql);
       $stmt->execute($data);//ここも質問
 
+// insertされたつぶやきのIDを取得
+      $new_tweet_id = $dbh->lastInsertId('tweet_id');
 
-// 
+// タグ登録機能
+      $input_tags = $_POST["hashtag"];
+      $input_tags = explode(" #", $input_tags);
+      // $input_tags = array("#なつ","夏","海外","セブ");
+      foreach ($input_tags as $tag_each) {
+         $input_tag = str_replace("#", "",$tag_each);
+        exists_tag($input_tag,$dbh);
+      }
+      // タグとつぶやきの関連付けをDBに保存
+      create_tweet_tags($new_tweet_id,$input_tags,$dbh);
+
 // unset();指定した変数を削除
       // unset($_SESSION["tweets"]);
     // 自分のページに移動　データの再送信防止
@@ -161,6 +174,21 @@ try{
       $follower_stmt->execute();
       $follower = $follower_stmt->fetch(PDO::FETCH_ASSOC);
 
+      // タグの一覧を表示
+      $tag_sql = "SELECT * FROM`tags`";
+      $tag_stmt= $dbh->prepare($tag_sql);
+      $tag_stmt->execute();
+
+      $tag_list = array();
+      while(1){
+        $one_tag = $tag_stmt->fetch(PDO::FETCH_ASSOC);
+
+        if($one_tag == false){
+          break;
+        }
+
+        $tag_list[] = $one_tag;
+      }
 
 }catch(Exection $e){
 
@@ -221,6 +249,15 @@ try{
                 <textarea name="tweet" cols="50" rows="5" class="form-control" placeholder="例：Hello World!"></textarea>
               </div>
             </div>
+<!-- タグ -->
+            <div class="form-group">
+              <label class="col-sm-4 control-label">タグ</label>
+              <div class="col-sm-8">
+                <input type="text" name="hashtag" class="form-control" placeholder="例：　#Japan #Cebu">
+              </div>_
+            </div>
+
+
           <ul class="paging">
             <input type="submit" class="btn btn-info" value="つぶやく">
                 &nbsp;&nbsp;&nbsp;&nbsp;
@@ -239,11 +276,16 @@ try{
                 <li><?php echo $page; ?>/全<?php echo $all_page_number;?>ページ </li>
           </ul>
         </form>
+        <ul>
+        <?php foreach($tag_list as $tag_each){?>
+           <li><h5><a href="tag_search.php?tag_id=<?php echo $tag_each["id"]?>">#<?php echo $tag_each["tag"] ?></a></h5></li>
+        <?php }?>
+        </ul> 
       </div>
 
       <div class="col-md-8 content-margin-top">
         <div class="msg_header">
-          <a href="follow.php?member_id=<?php echo $_SESSION["id"]; ?>">Followers<span class="badge badge-pill badge-default"><?php echo $follower["cnt"];?></span></a> <a href="#">Following<span class="badge badge-pill badge-default"><?php echo $following["cnt"];?></span></a>
+          <a href="follow.php?member_id=<?php echo $_SESSION["id"]; ?>">Followers<span class="badge badge-pill badge-default"><?php echo $follower["cnt"];?></span></a> <a href="following.php?member_id=<?php echo $_SESSION["id"]; ?>">Following<span class="badge badge-pill badge-default"><?php echo $following["cnt"];?></span></a>
         </div>
       <?php  
         foreach ($tweet_list as $one_tweet) { 
